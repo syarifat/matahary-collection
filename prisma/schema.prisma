@@ -1,0 +1,68 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// === TABEL USER ===
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(CUSTOMER)
+  orders    Order[]  // Relasi: 1 User punya banyak Order
+  createdAt DateTime @default(now())
+}
+
+enum Role {
+  CUSTOMER
+  ADMIN
+}
+
+// === TABEL PRODUK ===
+model Product {
+  id          Int         @id @default(autoincrement())
+  name        String      // Contoh: "Setelan Training Matahary"
+  description String      @db.Text
+  price       Int
+  stock       Int
+  category    String      // "Baju", "Training", "Custom"
+  imageUrl    String?     // Link gambar produk
+  orderItems  OrderItem[] // Relasi ke detail pesanan
+  createdAt   DateTime    @default(now())
+}
+
+// === TABEL ORDER (Transaksi & Midtrans) ===
+model Order {
+  id          String      @id @default(uuid()) // Pake UUID biar aman buat resi
+  userId      Int
+  user        User        @relation(fields: [userId], references: [id])
+  totalAmount Int
+  status      OrderStatus @default(PENDING)
+  snapToken   String?     // Token dari Midtrans
+  resi        String?     // Resi pengiriman (nanti dikirim via Fonnte)
+  items       OrderItem[] // Relasi ke detail barang yang dibeli
+  createdAt   DateTime    @default(now())
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  SHIPPED
+  CANCELLED
+}
+
+// === TABEL DETAIL ORDER ===
+model OrderItem {
+  id        Int     @id @default(autoincrement())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id])
+  productId Int
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int
+  price     Int     // Harga saat itu (mencegah harga berubah di history)
+}
