@@ -22,6 +22,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <Shirt size={20} className="text-slate-400 group-hover:text-amber-500 transition-colors" />
             <span className="font-medium">Katalog Produk</span>
           </Link>
+          <Link href="/admin/orders" className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-800 hover:text-white transition-all group">
+            <ShoppingBag size={20} className="text-slate-400 group-hover:text-amber-500 transition-colors" />
+            <span className="font-medium">Pesanan Masuk</span>
+          </Link>
         </nav>
       </aside>
 
