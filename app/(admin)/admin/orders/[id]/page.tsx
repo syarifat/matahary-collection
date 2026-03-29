@@ -14,15 +14,13 @@ import {
 import Link from "next/link";
 
 export default async function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  // 1. Ambil ID dari params (tunggu promise selesai)
+  // 1. Ambil ID dari params
   const { id } = await params;
 
-  // 2. Query database - Hilangkan parseInt jika ID di database adalah String/UUID
-  // Jika di schema.prisma ID Order adalah @id @default(autoincrement()), gunakan Number(id)
-  // Jika di schema.prisma ID Order adalah @id @default(cuid()) atau @default(uuid()), gunakan id langsung
+  // 2. Query database langsung menggunakan String ID
   const order = await prisma.order.findUnique({
     where: { 
-      id: id // Coba kirim string langsung dulu
+      id: id 
     }, 
     include: {
       user: true,
@@ -34,22 +32,13 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
     }
   });
 
+  // 3. Jika pesanan tidak ditemukan, langsung arahkan ke halaman 404
   if (!order) {
-    const orderWithInt = await prisma.order.findUnique({
-      where: { id: parseInt(id) || 0 },
-      include: {
-        user: true,
-        items: { include: { product: true } }
-      }
-    });
-    
-    if (!orderWithInt) notFound();
-    return <OrderContent order={orderWithInt} />;
+    notFound();
   }
 
   return (
     <div className="max-w-6xl mx-auto space-y-6 pb-20">
-       {}
        <div className="flex items-center gap-4">
         <Link href="/admin/orders" className="p-2 hover:bg-white border border-transparent hover:border-slate-200 text-slate-500 rounded-xl transition-all shadow-sm">
           <ArrowLeft size={20} />
